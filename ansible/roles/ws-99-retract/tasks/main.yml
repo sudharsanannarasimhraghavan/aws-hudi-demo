@@ -1,0 +1,57 @@
+---
+# tasks file for ws-99-retract
+
+  - name: delete the RDS subnet group
+    rds_subnet_group:
+      state: absent
+      name: "{{ db_subnet_group_name }}"
+      region: "{{ aws_region }}"
+    ignore_errors: yes
+
+  - name: delete the RDS postgres database
+    rds:
+      command: delete
+      instance_name: "{{ db_instance_identifier }}"
+      region: "{{ aws_region }}"
+      db_name: "{{ db_name }}"
+      db_engine: postgres
+      wait: yes
+      wait_timeout: 6000
+    register: postgres_result
+    ignore_errors: yes
+
+  - name: delete the EKS 
+    shell: "eksctl delete cluster -f '{{ playbook_dir }}/roles/ws-01-eks-create/files/{{deployment_env_short}}/cluster-config.yaml'"
+    register: eks_result
+    ignore_errors: yes
+
+  - debug:
+      msg: "{{ eks_result }}"
+    ignore_errors: yes
+
+  - name: delete security-group for postgress 
+    cloudformation:
+      stack_name: "{{sg_name}}"
+      state: "absent"
+      template: "{{ playbook_dir }}/roles/ws-00-vpc-sg/files/vpc-security-group.yaml"
+      template_parameters:
+        VpcId: "{{VpcId}}"
+      tags:
+        Name: "ansible-cloudformation-sg"
+    register: sg_result
+    ignore_errors: yes
+
+  - name: delete the vpc 
+    cloudformation:
+      stack_name: "{{vpc_name}}"
+      state: "absent"
+      region: "{{aws_region}}"
+      template: "{{ playbook_dir }}/roles/ws-00-vpc-create/templates/vpc-3azs.yaml"
+      template_parameters:
+        ClassB: 67
+      tags:
+        Name: "ansible-cloudformation-vpc"
+    register: vpc_result
+    ignore_errors: yes
+
+

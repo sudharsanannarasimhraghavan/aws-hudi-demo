@@ -1,0 +1,126 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: {{ eks_cluster_name }}
+  region: {{ aws_region }}
+  version: "1.14"
+  tags:
+    tag1: value1
+
+# # this example specify a given role ARN for service
+iam:
+  fargatePodExecutionRoleARN: "{{ eks_fargatePodExecutionRoleARN }}" 
+  serviceRoleARN: "{{ eks_serviceRoleARN }}"
+
+vpc:
+  id: "{{ VpcId }}"
+  # cidr: "152.28.0.0/16"
+  subnets:
+    # public:
+    #   {{ vpc_info.AZA }}:
+    #       id: "{{ vpc_info.SubnetAPublic }}"
+    #   {{ vpc_info.AZB }}:
+    #       id: "{{ vpc_info.SubnetBPublic }}"
+    #   {{ vpc_info.AZC }}:
+    #       id: "{{ vpc_info.SubnetCPublic }}"
+    private:
+      {{ vpc_info.AZA }}:
+          id: "{{ vpc_info.SubnetAPrivate }}"
+      {{ vpc_info.AZB }}:
+          id: "{{ vpc_info.SubnetBPrivate }}"
+      {{ vpc_info.AZC }}:
+          id: "{{ vpc_info.SubnetCPrivate }}"
+# # if specific subnets are specified then this setting is not accepted
+# availabilityZones: ["{{ aws_region }}a", "{{ aws_region }}b", "{{ aws_region }}c"] 
+
+nodeGroups:
+  - name: {{ eks_nodegroup_name }}
+    instanceType: {{ eks_instance_type }}
+    desiredCapacity: 3
+    minSize: 3
+    maxSize: 10
+    volumeSize: 80
+    volumeType: gp2
+    privateNetworking: true
+    ami: "{{ eks_ami }}"
+    ssh:
+      allow: true # will use ~/.ssh/id_rsa.pub as the default ssh key
+      publicKeyName: '{{ eks_publickey }}'
+      # # another way to specify a ssh key is the local path to the public key
+      # publicKeyPath: /Users/marian.dumitrascu/Dropbox/Work/current/key-pairs/ssh/id_rsa.pub
+    # availabilityZones: ["{{ aws_region }}c"]
+    labels:
+      nodegroup-label: ng-01    
+    # kubeletExtraConfig:
+    #   # this example shows how to set specific DNS for the cluster
+    #   clusterDNS: ["169.254.20.10","172.20.0.10"]
+    # iam:
+    #   withAddonPolicies:
+    #     imageBuilder: true    # The imageBuilder policy allows for full ECR (Elastic Container Registry) access. 
+    #                           # This is useful for building, for example, a CI server that needs to push images to ECR.
+    #     autoScaler: true
+    #     externalDNS: true
+    #     certManager: true
+    #     appMesh: true
+    #     ebs: true             # The ebs policy enables the new EBS CSI (Elastic Block Store Container Storage Interface) driver.
+    #     fsx: true
+    #     efs: true
+    #     albIngress: true
+    #     xRay: true
+    #     cloudWatch: true
+    
+    ##############################################################################################################################################
+    # # This example creates a nodegroup that reuses an existing IAM Instance Role:
+    iam:
+        instanceProfileARN: "{{ eks_instanceProfileARN }}"
+        instanceRoleARN: "{{ eks_instanceRoleARN }}"
+
+    # # this example shows attaching policies by ARN
+    # iam:
+    #   attachPolicyARNs:
+    #     - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+    #     - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+    #     - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+    #     - arn:aws:iam::1111111111:policy/kube2iam
+    #   withAddonPolicies:
+    #     autoScaler: true
+    #     imageBuilder: true    
+
+    # The following example config file creates a nodegroup that reserves 300m vCPU, 300Mi of memory 
+    # and 1Gi of ephemeral-storage for the kubelet; 300m vCPU, 300Mi of memory and 1Giof ephemeral storage
+    # for OS system daemons; and kicks in eviction of pods when there is less than 200Mi of memory 
+    # available or less than 10% of the root filesystem.
+
+    # In this example, given instances of type m5a.xlarge which have 4 vCPUs and 16GiB of memory, 
+    # the Allocatable amount of CPUs would be 3.4 and 15.4 GiB of memory. In addition, the DynamicKubeletConfig 
+    # feature gate is also enabled. It is important to know that the values specified in the config file for 
+    # the the fields in kubeletExtraconfig will completely overwrite the default values specified by eksctl.
+
+    # # not used for managed nodes
+    kubeletExtraConfig:
+      kubeReserved:
+          cpu: "600m"
+          memory: "1024Mi"
+          ephemeral-storage: "2Gi"
+      kubeReservedCgroup: "/kube-reserved"
+      systemReserved:
+          cpu: "600m"
+          memory: "1024Mi"
+          ephemeral-storage: "2Gi"
+      evictionHard:
+          memory.available:  "200Mi"
+          nodefs.available: "10%"
+      # featureGates:
+      #     DynamicKubeletConfig: true
+      #     RotateKubeletServerCertificate: true # has to be enabled, otherwise it will be disabled
+    securityGroups:
+      withShared: true
+      withLocal: true
+      # attachIDs: ['sg-11111', 'sg-11112']          
+
+    tags:
+      # EC2 tags required for cluster-autoscaler auto-discovery
+      # these are not necessary for managed node groups
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/{{ eks_cluster_name }}: "owned"
