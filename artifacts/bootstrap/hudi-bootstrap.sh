@@ -13,7 +13,7 @@ sudo chmod a+rw /home/hadoop/dfs-source-retail-transactions-incremental.properti
 
 sudo yum install -y jq
 
-#export CLUSTER_ID=`aws emr list-clusters --active | jq -r '.[] | .[] | select(.Name=="hudiblogemrcluster") | .Id'`
+#export CLUSTER_ID=`aws emr list-clusters --active | jq -r '.[] | .[] | select(.Name=="hudi-demo-emrcluster") | .Id'`
 export CLUSTER_ID=`cat /emr/instance-controller/lib/info/extraInstanceData.json | jq '.jobFlowId' | sed 's/"//g'`
 export MASTER_DNS=`aws emr describe-cluster --cluster-id $CLUSTER_ID | jq -r   '.[].MasterPublicDnsName'`
 export PRIVATE_IP=`aws emr list-instances --cluster-id $CLUSTER_ID --instance-group-types MASTER | jq -r   '.[] |.[].PrivateIpAddress'`

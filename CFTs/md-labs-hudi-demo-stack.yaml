@@ -76,7 +76,7 @@ Resources:
     Properties:
       CatalogId: !Ref 'AWS::AccountId'
       DatabaseInput:
-        Description: Database for the Hudi CDC Blog
+        Description: Database for the Hudi CDC Demo
         LocationUri: !Join
           - ''
           - - 's3://'
@@ -117,7 +117,7 @@ Resources:
   mySQLDBParameterGroup:
     Type: 'AWS::RDS::DBParameterGroup'
     Properties:
-      Description: Custom Parameter Group for mySQL 5.7 Hudi Blog Source DB
+      Description: Custom Parameter Group for mySQL 5.7 Hudi Demo Source DB
       Family: mysql5.7
       Parameters:
         binlog_format: ROW
@@ -127,7 +127,7 @@ Resources:
   mySQLsubnetgroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
-      DBSubnetGroupDescription: Subnet Group for mySQL DB for Hudi Blog
+      DBSubnetGroupDescription: Subnet Group for mySQL DB for Hudi Demo
       DBSubnetGroupName: md-labs-hudi-demo-rdssubnetgroup
       SubnetIds:
         - !Ref Subnet1
@@ -234,7 +234,7 @@ Resources:
             Resource: !GetAtt
               - TempS3Bucket
               - Arn
-      ManagedPolicyName: HudiBlogDMSS3Policy
+      ManagedPolicyName: HudiDemoDMSS3Policy
       Roles:
         - !Ref DMSS3IAMRole
 
@@ -242,7 +242,7 @@ Resources:
   DMSS3IAMRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: HudiBlogDMSS3IAMRole
+      RoleName: HudiDemoDMSS3IAMRole
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -444,7 +444,7 @@ Resources:
               - 'glue:*Partition*'
               - 'glue:*Database*'
               - 'glue:Get*'
-      ManagedPolicyName: HudiBlogEMREC2Policy
+      ManagedPolicyName: HudiDemoEMREC2Policy
       Roles:
         - !Ref emrEc2Role
 
@@ -515,7 +515,7 @@ Resources:
               - !Ref TempS3Bucket
       Tags:
         - Key: Name
-          Value: hudiblogemrcluster
+          Value: hudi-demo-emrcluster
       Configurations:
         - Classification: hive-site
           ConfigurationProperties:
