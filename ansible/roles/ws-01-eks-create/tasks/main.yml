@@ -1,0 +1,77 @@
+---
+# tasks file for eks-create
+
+- block:
+  #########################################################################################
+  - name: check if cluster exists
+    shell: "aws eks list-clusters"
+    register: eks_list
+
+  - debug:
+      msg: "{{ eks_list.stdout }}"
+
+
+  - block:
+    #######################################################################################
+
+    - name: read VPC information from a json file
+      include_vars:
+        file: "{{ playbook_dir }}/environments/{{ deployment_env }}/vpc_info.json"
+        name: vpc_info
+
+    - name: create eks config yaml for eksctl
+      template:
+        src: "{{role_path}}/templates/cluster-config{{ eks_config_postfix }}.yaml"
+        dest: "{{role_path}}/files/{{ deployment_env_short }}/cluster-config.yaml"
+
+    - name: create EKS cluster using eksctl and config file
+      shell: "eksctl create cluster -f '{{role_path}}/files/{{deployment_env_short}}/cluster-config.yaml'"
+      register: eks_result
+
+    - debug:
+        msg: "{{ eks_result.stdout }}"
+
+    #######################################################################################
+    when: "not eks_cluster_name in eks_list.stdout"
+    
+  #########################################################################################
+  when: execute_eks_create is defined and execute_eks_create == 1
+
+- block:
+  ##################################################################################################
+  - name: install openshift required for k8s module
+    shell: "pip install openshift --user"
+    register: shell_result
+    ignore_errors: yes
+
+  - debug:
+      msg: "{{ shell_result }}"
+
+  - name: set the cluster for kubectl
+    shell: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"
+
+  # apply aws-auth for non-prod and prod
+  - name: apply aws-auth config-map
+    k8s:
+      state: present
+      src: "{{ role_path }}/files/{{deployment_env_short}}/aws-auth.yaml"
+      wait: yes
+
+  #################################################################################################
+  when: deployment_env == "prod"
+
+- block:
+  ##################################################################################################
+
+  - name: set the cluster for kubectl
+    shell: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"
+
+  # apply aws-auth for non-prod and prod
+  - name: apply aws-auth config-map
+    k8s:
+      state: present
+      src: "{{ role_path }}/files/{{deployment_env_short}}/aws-auth.yaml"
+      wait: yes
+
+  #################################################################################################
+  when: deployment_env == "non-prod"

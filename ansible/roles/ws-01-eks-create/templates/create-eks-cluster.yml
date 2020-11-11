@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  EKS cluster (dedicated VPC: false, dedicated IAM: true) [created and managed
+  by eksctl]
+Resources:
+  ClusterSharedNodeSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Communication between all nodes in the cluster
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}/ClusterSharedNodeSecurityGroup'
+      VpcId: vpc-0522c1254b038d64f
+  ControlPlane:
+    Type: 'AWS::EKS::Cluster'
+    Properties:
+      Name: {{eks_cluster_name}}
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref ControlPlaneSecurityGroup
+        SubnetIds:
+          - subnet-020c05be965826444
+          - subnet-04f30f6c1cb7962c6
+          - subnet-0f861539fe735f446
+          - subnet-04ba8170e4e8ab13a
+          - subnet-0fc8ad1c1dab771b7
+          - subnet-04e8b502b032a8240
+      RoleArn: !GetAtt ServiceRole.Arn
+      Version: '1.13'
+  ControlPlaneSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Communication between the control plane and worker nodegroups
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}/ControlPlaneSecurityGroup'
+      VpcId: vpc-0522c1254b038d64f
+  IngressInterNodeGroupSG:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      Description: Allow nodes to communicate with each other (all ports)
+      FromPort: 0
+      GroupId: !Ref ClusterSharedNodeSecurityGroup
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref ClusterSharedNodeSecurityGroup
+      ToPort: 65535
+  PolicyCloudWatchMetrics:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 'cloudwatch:PutMetricData'
+            Effect: Allow
+            Resource: '*'
+        Version: 2012-10-17
+      PolicyName: !Sub '${AWS::StackName}-PolicyCloudWatchMetrics'
+      Roles:
+        - !Ref ServiceRole
+  PolicyNLB:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 'elasticloadbalancing:*'
+              - 'ec2:CreateSecurityGroup'
+              - 'ec2:Describe*'
+            Effect: Allow
+            Resource: '*'
+        Version: 2012-10-17
+      PolicyName: !Sub '${AWS::StackName}-PolicyNLB'
+      Roles:
+        - !Ref ServiceRole
+  ServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEKSServicePolicy'
+        - 'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy'
+Outputs:
+  ARN:
+    Export:
+      Name: !Sub '${AWS::StackName}::ARN'
+    Value: !GetAtt ControlPlane.Arn
+  CertificateAuthorityData:
+    Value: !GetAtt ControlPlane.CertificateAuthorityData
+  ClusterStackName:
+    Value: !Ref 'AWS::StackName'
+  Endpoint:
+    Export:
+      Name: !Sub '${AWS::StackName}::Endpoint'
+    Value: !GetAtt ControlPlane.Endpoint
+  FeatureNATMode:
+    Value: Disable
+  SecurityGroup:
+    Export:
+      Name: !Sub '${AWS::StackName}::SecurityGroup'
+    Value: !Ref ControlPlaneSecurityGroup
+  ServiceRoleARN:
+    Export:
+      Name: !Sub '${AWS::StackName}::ServiceRoleARN'
+    Value: !GetAtt ServiceRole.Arn
+  SharedNodeSecurityGroup:
+    Export:
+      Name: !Sub '${AWS::StackName}::SharedNodeSecurityGroup'
+    Value: !Ref ClusterSharedNodeSecurityGroup
+  SubnetsPrivate:
+    Export:
+      Name: !Sub '${AWS::StackName}::SubnetsPrivate'
+    Value: !Join 
+      - ','
+      - - subnet-020c05be965826444
+        - subnet-04f30f6c1cb7962c6
+        - subnet-0f861539fe735f446
+  SubnetsPublic:
+    Export:
+      Name: !Sub '${AWS::StackName}::SubnetsPublic'
+    Value: !Join 
+      - ','
+      - - subnet-04ba8170e4e8ab13a
+        - subnet-0fc8ad1c1dab771b7
+        - subnet-04e8b502b032a8240
+  VPC:
+    Export:
+      Name: !Sub '${AWS::StackName}::VPC'
+    Value: vpc-0522c1254b038d64f
