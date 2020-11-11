@@ -82,7 +82,7 @@ Resources:
           - - 's3://'
             - !Ref TempS3Bucket
             - /
-        Name: hudiblogdb
+        Name: hudi-glue-db
 
 
   mySQLDB:
@@ -410,7 +410,7 @@ Resources:
                   - !Ref 'AWS::Region'
                   - ':'
                   - !Ref 'AWS::AccountId'
-                  - ':database/hudiblogdb'
+                  - ':database/hudi-glue-db'
               - !Join
                 - ''
                 - - 'arn:aws:glue:'
@@ -431,7 +431,7 @@ Resources:
                   - !Ref 'AWS::Region'
                   - ':'
                   - !Ref 'AWS::AccountId'
-                  - ':table/hudiblogdb/*'
+                  - ':table/hudi-glue-db/*'
               - !Join
                 - ''
                 - - 'arn:aws:glue:'

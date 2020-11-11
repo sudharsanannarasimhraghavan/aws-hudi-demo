@@ -149,7 +149,7 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --source-ordering-field dms_received_ts \
     --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-full.properties \
     --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudiblogdb.retail_transactions \
+    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi-glue-db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
@@ -164,7 +164,7 @@ spark-shell --conf "spark.serializer=org.apache.spark.serializer.KryoSerializer"
 
 # execute a sql query in spark
 spark.sql("show databases").show()
-spark.sql("Select * from hudiblogdb.retail_transactions order by tran_id").show()
+spark.sql("Select * from hudi-glue-db.retail_transactions order by tran_id").show()
 
 # s3://md-labs-hudi-demo-data-bucket/dmsdata/data-full/dev/retail_transactions/
 
@@ -184,7 +184,7 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --table-type COPY_ON_WRITE \
     --source-ordering-field dms_received_ts \
     --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudiblogdb.retail_transactions \
+    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi-glue-db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
@@ -201,5 +201,5 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --source-ordering-field dms_received_ts \
     --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
     --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions \
-    --target-table hudiblogdb.retail_transactions \
+    --target-table hudi-glue-db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.AWSDmsTrans
