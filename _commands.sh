@@ -120,7 +120,7 @@ aws emr create-cluster \
 ####################################################################################################################################################################
 
 ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pairs/md-labs-key-pair.pem \
-hadoop@ec2-34-226-140-97.compute-1.amazonaws.com
+hadoop@ec2-54-234-154-169.compute-1.amazonaws.com
 
 
 ####################################################################################################################################################################
@@ -156,7 +156,9 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --enable-hive-sync
 
 ############################################################################################################################################
-spark-shell --conf "spark.serializer=org.apache.spark.serializer.KryoSerializer" --conf "spark.sql.hive.convertMetastoreParquet=false" \
+spark-shell \
+--conf "spark.serializer=org.apache.spark.serializer.KryoSerializer" \
+--conf "spark.sql.hive.convertMetastoreParquet=false" \
 --packages org.apache.hudi:hudi-spark-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
 --jars /usr/lib/hudi/hudi-spark-bundle_2.11-0.5.2-incubating.jar,/usr/lib/spark/external/lib/spark-avro.jar
 
@@ -191,15 +193,42 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --enable-hive-sync \
     --checkpoint 0
 
+# continuos
+spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
+    --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
+    --master yarn --deploy-mode cluster \
+    --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+    --conf spark.sql.hive.convertMetastoreParquet=false \
+    /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
+    --table-type COPY_ON_WRITE \
+    --source-ordering-field dms_received_ts \
+    --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
+    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
+    --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
+    --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
+    --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
+    --enable-hive-sync \
+    --checkpoint 0 --min-sync-interval-seconds 300 –-continuous
+
 
 
     ##########################################################################################
-    spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer \
-    --packages org.apache.spark:spark-avro_2.11:2.4.4 --master yarn --deploy-mode cluster \
-    hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
-    --table-type COPY_ON_WRITE \
-    --source-ordering-field dms_received_ts \
-    --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions \
-    --target-table hudi_glue_db.retail_transactions \
-    --transformer-class org.apache.hudi.utilities.transform.AWSDmsTrans
+    # connect to hudi cli
+
+    /usr/lib/hudi/cli/bin/hudi-cli.sh
+
+    connect --path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions
+
+    # reference:
+    # https://hudi.apache.org/docs/0.5.2-querying_data.html
+    # https://hudi.apache.org/docs/0.5.2-quick-start-guide.html#incremental-query
+    commits show
+
+
+
+    ###########################################################################################
+    #  prepare for working with emr notebook
+
+    hdfs dfs -mkdir -p /apps/hudi/lib
+    hdfs dfs -copyFromLocal /usr/lib/hudi/hudi-spark-bundle.jar /apps/hudi/lib/hudi-spark-bundle.jar
+    hdfs dfs -copyFromLocal /usr/lib/spark/external/lib/spark-avro.jar /apps/hudi/lib/spark-avro.jar
