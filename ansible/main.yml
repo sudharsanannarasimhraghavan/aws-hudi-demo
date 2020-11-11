@@ -41,7 +41,7 @@
           - ws----configure-aws         # not executed if nocyberark is defined
           - ws-00-vpc-create            # executed only if execute_vpc_create is defined
           - ws-00-vpc-sg                # executed only if execute_vpc_sg is defined
-          # - ws-02-postgres-create       # executed only if execute_postgres_create is defined
+          # - ws-02-rds-create       # executed only if execute_postgres_create is defined
 
         loop_control:
           loop_var: role_item
