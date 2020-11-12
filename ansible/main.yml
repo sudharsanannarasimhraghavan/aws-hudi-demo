@@ -24,6 +24,7 @@
   remote_user: root
 
   vars:
+    # this will be usually specified in command line params
     - deployment_env: aia      # must be overwritten with an inline variable. eg: ... -e "deployment_env=non-prod"
 
   tasks:
@@ -34,17 +35,63 @@
 #######################################################################################################
 
 
-      - name: execute curent project specific roles in aloop
+      #####################################################
+      # deploy the vpc and our security group
+
+      # execute roles in a loop from a list
+      - name: execute curent project specific roles in a loop
         include_role:
           name: "{{role_item}}"
         loop:
-          - ws----configure-aws         # not executed if nocyberark is defined
           - ws-00-vpc-create            # executed only if execute_vpc_create is defined
           - ws-00-vpc-sg                # executed only if execute_vpc_sg is defined
-          # - ws-02-rds-create       # executed only if execute_postgres_create is defined
-
         loop_control:
           loop_var: role_item
+
+
+      #####################################################
+      # process project artifacts
+
+      - name: prepare project artifacts
+        include_role:
+          name: ws-00-build-artifacts
+
+
+      ######################################################
+      # create artifacts bucket and upload local build
+
+      # this should be moved to retract
+      - name: delete artifacts bucket and all contents
+        amazon.aws.aws_s3:
+          bucket: "{{ bucket_artifacts }}"
+          mode: delete
+
+      # - name: create artifacts s3 bucket v1
+      #   amazon.aws.s3_bucket:
+      #     name: "{{ bucket_artifacts }}"
+      #     state: present
+      #     encryption: "AES256"
+
+      - name: create artifacts s3 bucket v2
+        amazon.aws.aws_s3:
+          bucket: "{{ bucket_artifacts }}"
+          mode: create
+          encryption_mode: AES256
+          permission: private
+
+      # this is as an example of shell command, instedad  should use amazon.aws.s3 module
+      - name: sync files using aws cli
+        shell: "aws s3 sync '{{ path_to_build }}/artifacts' 's3://{{ bucket_artifacts }}/{{ application_name }}/artifacts'"
+        register: shell_response
+
+      # display the output of the shell command
+      - debug:
+          msg: "{{ shell_response }}"
+
+
+
+
+
 #######################################################################################################
       always:
 #######################################################################################################

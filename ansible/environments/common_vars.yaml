@@ -1,3 +1,4 @@
-
-  ---
+---
   # variables common to all environments
+
+  common_variable: some value

@@ -240,6 +240,7 @@ key-pairs/*
 # Build folder
 */build/*
 build/*
+build-copy/*
 
 .vscode/settings.json
 

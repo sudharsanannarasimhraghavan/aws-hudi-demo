@@ -2,7 +2,7 @@
 # tasks file for 00-vpc-create
 - debug:
     msg: "{{ execute_vpc_create }}"
-    
+
 - block:
   - name: create a vpc with 6 subnets, in 3 az, public and private
     cloudformation:
@@ -21,29 +21,34 @@
       msg: "{{ vpc_result.stack_outputs }}"
 
   - name: capture VpcId and subnets
-    set_fact: 
-      eks_public_subnets: "{{ vpc_result.stack_outputs.SubnetsPublic }}"
-      eks_private_subnets: "{{ vpc_result.stack_outputs.SubnetsPrivate }}"
+    set_fact:
+      public_subnets: "{{ vpc_result.stack_outputs.SubnetsPublic }}"
+      private_subnets: "{{ vpc_result.stack_outputs.SubnetsPrivate }}"
       VpcId: "{{vpc_result.stack_outputs.VPC}}"
 
-  - name: verify eks_public_subnets
+  - name: verify public_subnets
     debug:
-      msg: "{{eks_public_subnets}}"
+      msg: "{{ublic_subnets}}"
 
-  - name: verify eks_private_subnets
+  - name: verify private_subnets
     debug:
-      msg: "{{eks_private_subnets}}"
+      msg: "{{private_subnets}}"
 
   - name: verify VpcId
     debug:
       msg: "{{VpcId}}"
-  
+
   - name: save VPC info to a file
-    # local_action: 
-    copy: 
-      content: "{{ vpc_result.stack_outputs | to_nice_json }}" 
-      dest: "{{ playbook_dir }}/environments/{{ deployment_env_short }}/vpc_info.json"      
+    # local_action:
+    copy:
+      content: "{{ vpc_result.stack_outputs | to_nice_json }}"
+      dest: "{{ playbook_dir }}/environments/{{ deployment_env }}/vpc_info.json"
+
+  # read the vpc info from json file to be used later
+  - name: read VPC information from a json file
+    include_vars:
+      file: "{{ playbook_dir }}/environments/{{ deployment_env }}/vpc_info.json"
+      name: vpc_info
 
 
   when: execute_vpc_create is defined and execute_vpc_create == 1
-      

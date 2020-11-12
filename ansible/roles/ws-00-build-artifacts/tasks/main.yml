@@ -1,0 +1,32 @@
+---
+# tasks file for ws-00-prepare-artifacts
+
+- name: create directories for build
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  loop:
+    - "{{ path_to_build }}/artifacts/bootstrap"
+    - "{{ path_to_build }}/artifacts/configs"
+    - "{{ path_to_build }}/artifacts/schema"
+    - "{{ path_to_build }}/artifacts/cloudformation"
+
+
+- name: process bootstraping and config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - {src: "{{ path_to_source }}/artifacts/bootstrap/hudi-bootstrap.sh.j2", dest: "{{ path_to_build }}/artifacts/bootstrap/hudi-bootstrap.sh"}
+
+    - {src: "{{ path_to_source }}/artifacts/configs/base.properties.j2", dest: "{{ path_to_build }}/artifacts/configs/base.properties"}
+    - {src: "{{ path_to_source }}/artifacts/configs/dfs-source-retail-transactions-full.properties.j2", dest: "{{ path_to_build }}/artifacts/configs/dfs-source-retail-transactions-full.properties"}
+    - {src: "{{ path_to_source }}/artifacts/configs/dfs-source-retail-transactions-incremental.properties.j2", dest: "{{ path_to_build }}/artifacts/configs/dfs-source-retail-transactions-incremental.properties"}
+
+    - {src: "{{ path_to_source }}/artifacts/schema/source-full.avsc", dest: "{{ path_to_build }}/artifacts/schema/source-full.avsc"}
+    - {src: "{{ path_to_source }}/artifacts/schema/source-incremental.avsc", dest: "{{ path_to_build }}/artifacts/schema/source-incremental.avsc"}
+    - {src: "{{ path_to_source }}/artifacts/schema/target.avsc", dest: "{{ path_to_build }}/artifacts/schema/target.avsc"}
+
+    - {src: "{{ path_to_source }}/artifacts/cloudformation/md-labs-hudi-demo-stack.yaml.j2", dest: "{{ path_to_build }}/artifacts/cloudformation/md-labs-hudi-demo-stack.yaml"}
+

@@ -1,19 +1,51 @@
 ---
-# Vars for dl-non-prod environment
+  # #######################################################
+  # global variables
+  deployment_env: aia
 
-default_region: us-east-1
-prefix_bu: md-labs
-prefix_app: hudi-demo
+  business_unit: md-labs
+  application_name: hudi-demo
+
+  aws_account: 156021229203
+  aws_region: us-east-1
+
+  path_to_source: "{{ playbook_dir }}/../source"
+  path_to_build: "{{ playbook_dir }}/../build"
+
+  bucket_artifacts: md-labs-hudi-demo-artifacts-bucket
+
+  # #######################################################
+  # security variables
+
+  # #######################################################
+  # vpc variables
+  vpc_name: "{{ business_unit }}-{{ application_name }}-vpc"
+  sg_name: "{{ business_unit }}-{{ application_name }}-sg"
+  public_subnets: ""
+  private_subnets: ""
+
+  # where many ports will be open to, can be your home public ip
+  sg_cidr: "98.199.0.0/16"
+
+  # #######################################################
+  # rds variables
+  ec2_keypair: "md-labs-key-pair"
+
+  # #######################################################
+  # emr variables
+
+  # #######################################################
+  # dms variables
+
+  # #######################################################
+  # glue variables
+  glue_db_name: "{{ business_unit }}_{{ application_name }}_glue_db"
 
 
-ec2_keypair: "md-labs-key-pair"
+  # #######################################################
+  # flow control variables
+  nocyberark: 1
+  execute_vpc_create: 1
 
-# Default VPC values, all will be populated with real values
-default_vpc_id: "vpc-0536d6e718c0f8ba4"
-default_vpc_private_subnet_a: "subnet-01747a9730d177c4b"
-default_vpc_private_subnet_b: "subnet-02bb448f61df34f9f"
-default_vpc_private_subnet_c: "subnet-05ee6041a2513a6a6"
 
-default_vpc_public_subnet_a: "subnet-01747a9730d177c4b"
-default_vpc_public_subnet_b: "subnet-02bb448f61df34f9f"
-default_vpc_public_subnet_c: "subnet-05ee6041a2513a6a6"
+
