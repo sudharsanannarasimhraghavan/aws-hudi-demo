@@ -1,0 +1,36 @@
+---
+# tasks file for 00_security_group
+- block:
+
+  - name: render the cft for sg
+    template:
+      src: "{{role_path}}/templates/vpc-security-group.yaml"
+      dest: "{{role_path}}/files/vpc-security-group.yaml"
+    
+
+  - name: create security-group for postgress 
+    cloudformation:
+      stack_name: "{{sg_name}}"
+      state: "present"
+      region: "{{aws_region}}"
+      template: "{{role_path}}/files/vpc-security-group.yaml"
+      template_parameters:
+        VpcId: "{{VpcId}}"
+      tags:
+        Name: "ansible-cloudformation-sg"
+    register: sg_result
+
+
+  - name: show sg stack result
+    debug:
+      msg: "{{sg_result.stack_outputs}}"
+
+  - name: capture the security group
+    set_fact: 
+      db_security_group: "{{sg_result.stack_outputs.SecurityGroup}}"
+
+  - name: verify SecurityGroup
+    debug:
+      msg: "{{db_security_group}}"
+
+  when: execute_vpc_sg is defined and execute_vpc_sg == 1
