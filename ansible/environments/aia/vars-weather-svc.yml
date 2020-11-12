@@ -1,0 +1,87 @@
+---
+
+  deployment_env: aia
+  deployment_env_short: aia
+  application_name: weathersvc
+
+  aws_account: "156021229203"
+  aws_region: us-east-1
+
+  vpc_name: eap-{{ deployment_env }}-{{ application_name }}-vpc-05
+  sg_name: eap-{{ deployment_env }}-{{ application_name }}-sg-05
+  sg_cidr: "98.199.0.0/16"
+
+  VpcId: vpc-04583eeaaac308059
+
+  eks_cluster_name: "eap-{{ deployment_env }}-{{ application_name}}-eks-cluster-08"
+  eks_nodegroup_name: "eap-{{ deployment_env }}-{{ application_name }}-eks-ng-08"
+  eks_instance_type: "m5a.xlarge" # "c4.2xlarge" # m5a.xlarge
+  eks_config_postfix: "-aia"
+
+    # this gets overwriten by VPC creation
+  eks_public_subnets: "subnet-0be071bf50ad2aee6,subnet-002d557e1b2c6db9b,subnet-0fa808293f99295db"
+  eks_private_subnets: "subnet-01747a9730d177c4b,subnet-02bb448f61df34f9f,subnet-05ee6041a2513a6a6"
+  subnets_used: "{{ eks_public_subnets }}"
+  eks_type: eks
+  eks_namespace: "weather-services"
+
+    # this is used in case load balancer for weathersvc app needs to be internal
+  eks_elb_annotation: ""
+  eks_alb_annotation: "alb.ingress.kubernetes.io/scheme: internet-facing"
+  eks_alb_domain_name: "weather-services-aia.com"
+
+  cyberark_postgress_url: "https://aim.vistraenergy.com/AIMWebService/api/Accounts?AppID=AIM_EAP-Datalake_NonProd2&Safe=APP_EAPDATALAKE_NonProd&Object=EAPDataLake1"
+
+  db_allocated_storage: 20
+  db_instance_class: db.m4.large #db.m4.xlarge
+  # db_instance_identifier: cognizant-{{ deployment_env }}-{{ application_name }}-rds-08
+  db_instance_identifier: cognizant-aia-hudi-demo-rds-02
+  # db_name: "{{ deployment_env }}_{{ application_name }}_db"
+  db_name: "hudi_demo_db"
+  db_engine_version: "11.4"
+  db_port: "5432"
+  # db_subnet_group_name: eap-{{ deployment_env }}-{{ application_name }}-sng-08 # this will be created
+  db_subnet_group_name: cognizant-aia-hudi-demo-sng-02 # this will be created
+  db_is_public: "True"
+  db_schema: weathersvc
+
+    # this gets overwriten by VPC creation
+  db_security_group: sg-0ed9ab22e849f52f6
+    # this is overwriten during  02-postgres-create role execution
+  db_endpoint: "{{ db_instance_identifier }}.cueeh1wa92dg.{{ aws_region }}.rds.amazonaws.com"
+
+  ecr_private_repository: True
+  ecr_repository_name: "eap-{{ deployment_env }}-{{ application_name }}"
+    # this is overwriten during 04-repository-create role execution
+  ecr_repository_uri: "{{ aws_account }}.dkr.ecr.{{ aws_region }}.amazonaws.com/{{ ecr_repository_name }}"
+  # container_version: "1.0.35" # moved to common_vars.yaml
+
+  # set the logging level for python apps
+  # CRITICAL = 50
+  # FATAL = CRITICAL
+  # ERROR = 40
+  # WARNING = 30
+  # WARN = WARNING
+  # INFO = 20
+  # DEBUG = 10
+  # NOTSET = 0
+  WS_LOGLEVEL: INFO
+
+  WX_STATION_SIZE_1h: 100
+  WX_REPLICAS_1h: 4
+  # WX_REPLICAS_1h: 13
+
+  WX_STATION_SIZE_2d: 50
+  WX_REPLICAS_2d: 7
+  # WX_REPLICAS_2d: 26
+
+  WX_STATION_SIZE_15d: 14
+  WX_REPLICAS_15d: 26
+  # WX_REPLICAS_15d: 90
+
+  execute_vpc_create: 1
+  execute_vpc_sg: 1
+  execute_eks_create: 1
+  execute_postgres_create: 1
+  nodataload: 1
+  execute_twistlock_scan: 1

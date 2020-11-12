@@ -1,0 +1,45 @@
+---
+#####################################################################################################
+#                                                                                                   #
+# Usage:                                                                                            #
+#                                                                                                   #
+# ansible-playbook retract.yaml -e "deployment_env=aia"                                                #
+# ansible-playbook retract.yaml -e "deployment_env=non-prod"                                            #
+# ansible-playbook retract.yaml -e "deployment_env=prod"                                                #
+#                                                                                                   #
+# ansible-playbook retract.yaml -e "deployment_env=aia nocyberark=1"                                   #
+# ansible-playbook retract.yaml -e "deployment_env=non-prod nocyberark=1"                               #
+# ansible-playbook retract.yaml -e "deployment_env=prod nocyberark=1"                                   #
+#                                                                                                   #
+#####################################################################################################
+
+- hosts: localhost
+  remote_user: root
+
+  vars:
+    - deployment_env: aia      # must be overwritten with an inline variable. eg: ... -e "deployment_env=non-prod"
+
+  tasks:
+    - include_vars: "./environments/{{ deployment_env }}/main.yml"               # global variables
+    - include_vars: "./environments/common_vars.yaml"                            # common vars same in all environments
+    - include_vars: "./environments/{{ deployment_env }}/vars-tags.yml"          # tags used in weather-svc
+    - include_vars: "./environments/{{ deployment_env }}/vars-weather-svc.yml"   # variables specific to weather-svc
+
+
+    - block:
+#######################################################################################################
+      - name: execute weather-svc specific roles
+        include_role:
+          name: "{{role_item}}"
+        loop:
+          - ws----configure-aws         # not executed if nocyberark is defined
+          - ws-99-retract
+        loop_control:
+          loop_var: role_item
+#######################################################################################################
+      always:
+#######################################################################################################
+        - name: clean up
+          include_role:
+            name: ws----cleanup-aws      # not executed if nocyberark is defined
+#######################################################################################################
