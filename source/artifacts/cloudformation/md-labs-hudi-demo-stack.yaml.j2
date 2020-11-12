@@ -35,30 +35,30 @@ Description: This CloudFormation Template spins up an environment for the Hudi D
 Parameters:
   VPC:
     Type: 'AWS::EC2::VPC::Id'
-    Default: 'vpc-0faa706cc14a9d30e'
+    Default: '{{ vpc_info.VPC }}'
   Subnet1:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: 'subnet-092d9ea0082da117f'
+    Default: '{{ vpc_info.SubnetAPublic }}'
   Subnet2:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: 'subnet-04b2fb05e1d6e1046'
+    Default: '{{ vpc_info.SubnetBPublic }}'
   CIDRBlock:
     Type: String
-    Default: '98.199.0.0/16'
+    Default: '{{ sg_cidr }}'
   DBUser:
     Type: String
-    Default: master
+    Default: {{ rds_master_user }}
   DBPassword:
     Type: String
     NoEcho: 'true'
-    Default: QAZwsx123
+    Default: {{ rds_master_password }}
   EMRLogS3Bucket:
     Type: String
-    Default: 'md-labs-emr-logs-bucket'
+    Default: '{{ emr_log_bucket }}'
   KeyName:
     Description: Must be an existing Keyname
     Type: AWS::EC2::KeyPair::KeyName
-    Default: 'md-labs-key-pair'
+    Default: '{{ ec2_keypair }}'
 
 
 Resources:
@@ -68,7 +68,7 @@ Resources:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
     Properties:
-      BucketName: 'md-labs-hudi-demo-data-bucket'
+      BucketName: '{{ bucket_data }}'
 
 
   GlueDB:
@@ -82,31 +82,31 @@ Resources:
           - - 's3://'
             - !Ref TempS3Bucket
             - /
-        Name: hudi_glue_db
+        Name: {{ glue_db_name }}
 
 
   mySQLDB:
     Type: 'AWS::RDS::DBInstance'
     Properties:
-      AllocatedStorage: '50'
+      AllocatedStorage: '{{ rds_allocation_storage }}'
       AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
       BackupRetentionPeriod: 1
-      DBInstanceClass: db.m4.large # db.m5.large
-      DBInstanceIdentifier: md-labs-hudi-demo-mysql-db-01
-      DBName: dev
+      DBInstanceClass: {{rds_instance_class}}
+      DBInstanceIdentifier: {{ rds_instance_identifier }}
+      DBName: {{ rds_db_name }}
       DBParameterGroupName: !Ref mySQLDBParameterGroup
       DBSubnetGroupName: !Ref mySQLsubnetgroup
       DeleteAutomatedBackups: true
       DeletionProtection: false
       EnablePerformanceInsights: false
-      Engine: mysql
-      EngineVersion: 5.7.22
+      Engine: {{ rds_engine }}
+      EngineVersion: {{ rds_engine_version }}
       MasterUsername: !Ref DBUser
       MasterUserPassword: !Ref DBPassword
-      MaxAllocatedStorage: 500
+      MaxAllocatedStorage: {{ rds_max_allocation_storage }}
       MultiAZ: false
-      Port: '3306'
+      Port: '{{ rds_port }}'
       PubliclyAccessible: true
       StorageEncrypted: false
       StorageType: gp2
@@ -128,7 +128,7 @@ Resources:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
       DBSubnetGroupDescription: Subnet Group for mySQL DB for Hudi Demo
-      DBSubnetGroupName: md-labs-hudi-demo-rdssubnetgroup
+      DBSubnetGroupName: {{ business_unit }}-{{ application_name }}-rdssubnetgroup
       SubnetIds:
         - !Ref Subnet1
         - !Ref Subnet2
@@ -138,7 +138,7 @@ Resources:
     Type: 'AWS::DMS::ReplicationSubnetGroup'
     Properties:
       ReplicationSubnetGroupDescription: Subnet Group for DMS for Hudi Demo
-      ReplicationSubnetGroupIdentifier: md-labs-hudi-dms-sg
+      ReplicationSubnetGroupIdentifier: {{ business_unit }}-hudi-dms-sg
       SubnetIds:
         - !Ref Subnet1
         - !Ref Subnet2
@@ -147,16 +147,16 @@ Resources:
   mySQLSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupName: md-labs-hudi-demo-sg-01
+      GroupName: {{ business_unit }}-{{ application_name }}-sg-01
       GroupDescription: Security Group for mySQL Database
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: {{ rds_port }}
+          ToPort: {{ rds_port }}
           CidrIp: !Ref CIDRBlock
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: {{ rds_port }}
+          ToPort: {{ rds_port }}
           SourceSecurityGroupId: !GetAtt
             - DMSSecurityGroup
             - GroupId
@@ -183,14 +183,14 @@ Resources:
   DMSReplicationInstance:
     Type: 'AWS::DMS::ReplicationInstance'
     Properties:
-      AllocatedStorage: 100
+      AllocatedStorage: {{ dms_allocation_storage }}
       AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
-      EngineVersion: 3.3.3
+      EngineVersion: {{ dms_engine_version }}
       MultiAZ: false
       PubliclyAccessible: true
-      ReplicationInstanceClass: dms.t2.large
-      ReplicationInstanceIdentifier: md-labs-hudi-demo-replinstance
+      ReplicationInstanceClass: {{ dms_instance_class }}
+      ReplicationInstanceIdentifier: {{ business_unit }}-{{ application_name }}-replinstance
       ReplicationSubnetGroupIdentifier: !Ref DMSsubnetgroup
       VpcSecurityGroupIds:
         - !Ref DMSSecurityGroup
@@ -199,12 +199,12 @@ Resources:
   DMSmySQLSourceEndpoint:
     Type: 'AWS::DMS::Endpoint'
     Properties:
-      DatabaseName: dev
-      EndpointIdentifier: md-labs-hudi-demo-endpoint-source
+      DatabaseName: {{ rds_db_name }}
+      EndpointIdentifier: {{ business_unit }}-{{ application_name }}-endpoint-source
       EndpointType: source
-      EngineName: mysql
+      EngineName: {{ rds_engine }}
       Password: !Ref DBPassword
-      Port: 3306
+      Port: {{ rds_port }}
       ServerName: !GetAtt
         - mySQLDB
         - Endpoint.Address
@@ -255,7 +255,7 @@ Resources:
   DMSS3TargetEndpoint:
     Type: 'AWS::DMS::Endpoint'
     Properties:
-      EndpointIdentifier: md-labs-hudi-demo-endpoint-target
+      EndpointIdentifier: {{ business_unit }}-{{ application_name }}-endpoint-target
       EndpointType: target
       EngineName: s3
       ExtraConnectionAttributes: >-
@@ -273,7 +273,7 @@ Resources:
     Properties:
       MigrationType: full-load-and-cdc
       ReplicationInstanceArn: !Ref DMSReplicationInstance
-      ReplicationTaskIdentifier: md-labs-hudi-demo-repl-task-01
+      ReplicationTaskIdentifier: {{ business_unit }}-{{ application_name }}-repl-task-01
       SourceEndpointArn: !Ref DMSmySQLSourceEndpoint
       TableMappings: >-
         {
@@ -285,7 +285,7 @@ Resources:
                 "rule-name":"1",
                 "object-locator":
                   {
-                    "schema-name": "dev",
+                    "schema-name": "{{ rds_db_name }}",
                     "table-name":"%"
                   },
                 "rule-action": "include",
@@ -328,8 +328,6 @@ Resources:
         - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
 
 
-
-
   EMREC2Policy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
@@ -363,11 +361,11 @@ Resources:
             Action:
               - 's3:*'
           - Effect: Allow
-            Resource: 'arn:aws:s3:::md-labs-hudi-demo-artifacts-bucket/*'
+            Resource: 'arn:aws:s3:::{{ bucket_artifacts }}/*'
             Action:
               - 's3:Get*'
           - Effect: Allow
-            Resource: 'arn:aws:s3:::md-labs-hudi-demo-artifacts-bucket'
+            Resource: 'arn:aws:s3:::{{ bucket_artifacts }}'
             Action:
               - 's3:ListBucket'
           - Effect: Allow
@@ -410,7 +408,7 @@ Resources:
                   - !Ref 'AWS::Region'
                   - ':'
                   - !Ref 'AWS::AccountId'
-                  - ':database/hudi_glue_db'
+                  - ':database/{{ glue_db_name }}'
               - !Join
                 - ''
                 - - 'arn:aws:glue:'
@@ -431,7 +429,7 @@ Resources:
                   - !Ref 'AWS::Region'
                   - ':'
                   - !Ref 'AWS::AccountId'
-                  - ':table/hudi_glue_db/*'
+                  - ':table/{{ glue_db_name }}/*'
               - !Join
                 - ''
                 - - 'arn:aws:glue:'
@@ -462,18 +460,10 @@ Resources:
     Properties:
       Applications:
         # including more than required for Hudi, for study purpose
-        - Name: Hadoop      # required for Hudi
-        - Name: Hive        # required for Hudi
-        - Name: Flink
-        - Name: Spark       # required for Hudi
-        - Name: Presto
-        - Name: Pig
-        - Name: Tez
-        - Name: JupyterHub
-        - Name: Hue
-        - Name: Sqoop
-        - Name: Zeppelin
-        - Name: ZooKeeper
+{% for app in emr_apps %}
+        - Name: {{ app }}
+{% endfor %}
+
       BootstrapActions:
         - Name: Bootstrap1
           ScriptBootstrapAction:
@@ -488,7 +478,7 @@ Resources:
               - s3
               - cp
               - >-
-                s3://md-labs-hudi-demo-artifacts-bucket/hudi-demo/bootstrap/hudi-bootstrap.sh
+                s3://{{ bucket_artifacts }}/{{ application_name }}/artifacts/bootstrap/hudi-bootstrap.sh
               - /home/hadoop/
         - Name: Bootstrap2
           ScriptBootstrapAction:
@@ -515,7 +505,7 @@ Resources:
               - !Ref TempS3Bucket
       Tags:
         - Key: Name
-          Value: hudi-demo-emrcluster
+          Value: {{ emr_cluster_name }}
       Configurations:
         - Classification: hive-site
           ConfigurationProperties:
@@ -528,27 +518,31 @@ Resources:
       Instances:
         Ec2KeyName: !Ref KeyName
         MasterInstanceGroup:
-          InstanceCount: 1
-          InstanceType: m5.xlarge
+          InstanceCount: {{ emr_master_count }}
+          InstanceType: {{ emr_master_instance }}
           Market: ON_DEMAND
           Name: Master
-        # CoreInstanceGroup:
-        #   InstanceCount: 1
-        #   InstanceType: m5.xlarge
-        #   Market: ON_DEMAND
-        #   Name: CORE
+
+{% if emr_core_count > 0 %}
+        CoreInstanceGroup:
+          InstanceCount: {{ emr_core_count }}
+          InstanceType: {{ emr_core_instance }}
+          Market: ON_DEMAND
+          Name: CORE
+{% endif %}
+
         TerminationProtected: false
         Ec2SubnetId: !Ref Subnet1
       JobFlowRole: !Ref emrEc2InstanceProfile
-      Name: md-labs-hudi-demo-emr-11
-      ReleaseLabel: emr-5.30.0
+      Name: {{ emr_cluster_name }}
+      ReleaseLabel: {{ emr_release }}
       ServiceRole: !Ref emrRole
       VisibleToAllUsers: true
       LogUri: !Join
         - ''
         - - 's3://'
           - !Ref EMRLogS3Bucket
-          - /hudi-demo-emr-logs/
+          - /{{ application_name }}-emr-logs/
 
 
 Outputs:
@@ -566,11 +560,14 @@ Outputs:
 
   mySQLDatabasePort:
     Description: Port for the RDS mySQL database
-    Value: '3306'
-
+    Value: '{{ rds_port }}'
 
   EMRClusterMasterNodeDNS:
     Description: DNS for the master node of the EMR cluster
     Value: !GetAtt
       - EMRCluster
       - MasterPublicDNS
+
+  EMRClusterId:
+    Description: EMR cluster id
+    Value: !Ref EMRCluster

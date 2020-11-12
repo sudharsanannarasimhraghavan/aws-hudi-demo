@@ -60,11 +60,11 @@
       ######################################################
       # create artifacts bucket and upload local build
 
-      # this should be moved to retract
-      - name: delete artifacts bucket and all contents
-        amazon.aws.aws_s3:
-          bucket: "{{ bucket_artifacts }}"
-          mode: delete
+      # # this should be moved to retract
+      # - name: delete artifacts bucket and all contents
+      #   amazon.aws.aws_s3:
+      #     bucket: "{{ bucket_artifacts }}"
+      #     mode: delete
 
       # - name: create artifacts s3 bucket v1
       #   amazon.aws.s3_bucket:
@@ -72,6 +72,8 @@
       #     state: present
       #     encryption: "AES256"
 
+
+      # reference: https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_s3_module.html
       - name: create artifacts s3 bucket v2
         amazon.aws.aws_s3:
           bucket: "{{ bucket_artifacts }}"
@@ -89,6 +91,28 @@
           msg: "{{ shell_response }}"
 
 
+      # TODO: data bucket should be segregated in two
+      - name: delete data bucket
+        amazon.aws.aws_s3:
+          bucket: "{{ bucket_data }}"
+          mode: delete
+
+
+      ######################################################
+      # deploy master cft
+      # reference: https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.cloudformation_module.rst
+      - name: deploy solution cloudformation
+        amazon.aws.cloudformation:
+          stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"
+          state: present
+          region: "{{ aws_region }}"
+          disable_rollback: true
+          template: "{{ path_to_build }}/artifacts/cloudformation/md-labs-hudi-demo-stack.yaml"
+          template_parameters:
+            VPC: "{{ vpc_info.VPC }}"
+            Subnet1: "{{ vpc_info.SubnetAPublic }}"
+            Subnet2: "{{ vpc_info.SubnetBPublic }}"
+            CIDRBlock: "{{ sg_cidr }}"
 
 
 

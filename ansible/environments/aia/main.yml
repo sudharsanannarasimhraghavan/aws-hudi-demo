@@ -13,6 +13,8 @@
   path_to_build: "{{ playbook_dir }}/../build"
 
   bucket_artifacts: md-labs-hudi-demo-artifacts-bucket
+  # TODO: segregate data bucket
+  bucket_data: md-labs-hudi-demo-data-bucket # created by the CFT
 
   # #######################################################
   # security variables
@@ -29,23 +31,50 @@
 
   # #######################################################
   # rds variables
-  ec2_keypair: "md-labs-key-pair"
+  rds_engine: mysql
+  rds_master_user: master
+  rds_master_password: QAZwsx123
+  rds_instance_class: db.m4.large
+  rds_instance_identifier: "{{ business_unit }}-{{ application_name }}-mysql-db" # md-labs-hudi-demo-mysql-db-01
+  rds_engine_version: 5.7.22
+  rds_port: 3306
+  rds_db_name: dev
+  rds_allocation_storage: 50
+  rds_max_allocation_storage: 300
 
   # #######################################################
   # emr variables
+  ec2_keypair: "md-labs-key-pair"
+
+  emr_release: emr-5.30.0
+  emr_cluster_name: "{{ business_unit }}-{{ application_name }}-emr"
+  emr_log_bucket: md-labs-emr-logs-bucket
+
+  emr_master_count: 1
+  emr_master_instance: m5.xlarge
+
+  emr_core_count: 0
+  emr_core_instance: m5.xlarge
+
+  emr_apps: [Hadoop, Hive, Flink, Spark, Presto, Pig, Tez, JupyterHub, Hue, Sqoop, Zeppelin, ZooKeeper]
+
 
   # #######################################################
   # dms variables
+  dms_instance_class: dms.t2.large
+  dms_engine_version: 3.3.3
+  dms_allocation_storage: 100
 
   # #######################################################
   # glue variables
-  glue_db_name: "{{ business_unit }}_{{ application_name }}_glue_db"
+  glue_db_name: "hudi_glue_db"
 
 
   # #######################################################
   # flow control variables
   nocyberark: 1
   execute_vpc_create: 1
+  execute_vpc_sg: 1
 
 
 
