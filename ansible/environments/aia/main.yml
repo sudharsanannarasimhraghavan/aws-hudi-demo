@@ -10,7 +10,7 @@
   aws_region: us-east-1
 
   path_to_source: "{{ playbook_dir }}/../source"
-  path_to_build: "{{ playbook_dir }}/../build"
+  path_to_build: "{{ playbook_dir }}/../build/{{ deployment_env }}"
 
   bucket_artifacts: md-labs-hudi-demo-artifacts-bucket
   # TODO: segregate data bucket

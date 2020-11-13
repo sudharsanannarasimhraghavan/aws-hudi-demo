@@ -98,21 +98,21 @@
           mode: delete
 
 
-      ######################################################
-      # deploy master cft
-      # reference: https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.cloudformation_module.rst
-      - name: deploy solution cloudformation
-        amazon.aws.cloudformation:
-          stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"
-          state: present
-          region: "{{ aws_region }}"
-          disable_rollback: true
-          template: "{{ path_to_build }}/artifacts/cloudformation/md-labs-hudi-demo-stack.yaml"
-          template_parameters:
-            VPC: "{{ vpc_info.VPC }}"
-            Subnet1: "{{ vpc_info.SubnetAPublic }}"
-            Subnet2: "{{ vpc_info.SubnetBPublic }}"
-            CIDRBlock: "{{ sg_cidr }}"
+      # ######################################################
+      # # deploy master cft
+      # # reference: https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.cloudformation_module.rst
+      # - name: deploy solution cloudformation
+      #   amazon.aws.cloudformation:
+      #     stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"
+      #     state: present
+      #     region: "{{ aws_region }}"
+      #     disable_rollback: true
+      #     template: "{{ path_to_build }}/artifacts/cloudformation/md-labs-hudi-demo-stack.yaml"
+      #     template_parameters:
+      #       VPC: "{{ vpc_info.VPC }}"
+      #       Subnet1: "{{ vpc_info.SubnetAPublic }}"
+      #       Subnet2: "{{ vpc_info.SubnetBPublic }}"
+      #       CIDRBlock: "{{ sg_cidr }}"
 
 
 
