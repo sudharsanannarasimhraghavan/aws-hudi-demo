@@ -6,7 +6,7 @@
   business_unit: md-labs
   application_name: hudi-demo
 
-  aws_account: 156021229203
+  # aws_account: 156021229203
   aws_region: us-east-1
 
   path_to_source: "{{ playbook_dir }}/../source"

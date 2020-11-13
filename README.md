@@ -17,8 +17,38 @@ This project also showcase infrastructure as code patern by using Ansible to orc
 
 ![Architecture](./docs/architecture.png)
 
+[TBD]
 
 ## Project Structure
 
+[TBD]
+
 
 ## Deployment
+
+To deploy the project follow these steps:
+
+1. Be sure you installed and configured all dependencies: AWS CLI, Python3.5+ and Ansible 2.9+. Have AWS CLI configured to point to your environment.
+Also install ansible aws module collection: `ansible-galaxy collection install amazon.aws`
+
+
+2. Define an environment specific to your case in `./ansible/environments/`  folder. You can duplicate `./ansible/environments/aia` to `./ansible/environments/prod` for example
+Here is where you will set names, prefixes, instance classes etc.
+
+3. Run ansible-playbook in ./ansible folder:
+
+```bash
+
+cd ./ansible
+ansible-playbook main.yml -e "deployment_env=<your deployiment env>"
+
+```
+
+
+To retract all resources, run:
+
+```bash
+
+ansible-playbook retract.yml -e "deployment_env=<your deployiment env>"
+
+```
