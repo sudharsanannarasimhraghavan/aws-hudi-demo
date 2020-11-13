@@ -17,25 +17,31 @@
   remote_user: root
 
   vars:
+    # this will be usually specified in command line params
     - deployment_env: aia      # must be overwritten with an inline variable. eg: ... -e "deployment_env=non-prod"
 
   tasks:
     - include_vars: "./environments/{{ deployment_env }}/main.yml"               # global variables
     - include_vars: "./environments/common_vars.yaml"                            # common vars same in all environments
-    - include_vars: "./environments/{{ deployment_env }}/vars-tags.yml"          # tags used in weather-svc
-    - include_vars: "./environments/{{ deployment_env }}/vars-weather-svc.yml"   # variables specific to weather-svc
-
-
+######################################################################################################
     - block:
 #######################################################################################################
-      - name: execute weather-svc specific roles
-        include_role:
-          name: "{{role_item}}"
-        loop:
-          - ws----configure-aws         # not executed if nocyberark is defined
-          - ws-99-retract
-        loop_control:
-          loop_var: role_item
+
+      - name: retract solution cloudformation
+        amazon.aws.cloudformation:
+          stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"
+          state: absent
+          region: "{{ aws_region }}"
+        ignore_errors: yes
+
+
+      - name: delete data bucket
+        amazon.aws.aws_s3:
+          bucket: "{{ bucket_data }}"
+          mode: delete
+        ignore_errors: yes
+
+
 #######################################################################################################
       always:
 #######################################################################################################
