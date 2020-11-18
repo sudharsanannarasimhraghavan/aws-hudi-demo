@@ -120,7 +120,7 @@ aws emr create-cluster \
 ####################################################################################################################################################################
 
 ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pairs/md-labs-key-pair.pem \
-hadoop@ec2-54-234-154-169.compute-1.amazonaws.com
+hadoop@ec2-52-205-250-255.compute-1.amazonaws.com -y
 
 
 ####################################################################################################################################################################
@@ -193,12 +193,18 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --enable-hive-sync \
     --checkpoint 0
 
+
 # continuos
 spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
     --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
     --master yarn --deploy-mode cluster \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.sql.hive.convertMetastoreParquet=false \
+    --conf spark.yarn.maxAppAttempts=20 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.max.executor.failures=16 \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
     /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
     --table-type COPY_ON_WRITE \
     --source-ordering-field dms_received_ts \
@@ -208,9 +214,9 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
     --enable-hive-sync \
-    --checkpoint 0 --min-sync-interval-seconds 300 –-continuous
+    --checkpoint 0
 
-
+# http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/
 
     ##########################################################################################
     # connect to hudi cli

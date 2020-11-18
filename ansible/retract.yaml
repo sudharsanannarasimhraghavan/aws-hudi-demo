@@ -3,13 +3,13 @@
 #                                                                                                   #
 # Usage:                                                                                            #
 #                                                                                                   #
-# ansible-playbook retract.yaml -e "deployment_env=aia"                                                #
-# ansible-playbook retract.yaml -e "deployment_env=non-prod"                                            #
-# ansible-playbook retract.yaml -e "deployment_env=prod"                                                #
+# ansible-playbook retract.yaml -e "deployment_env=aia"
+# ansible-playbook retract.yaml -e "deployment_env=non-prod"
+# ansible-playbook retract.yaml -e "deployment_env=prod"
 #                                                                                                   #
-# ansible-playbook retract.yaml -e "deployment_env=aia nocyberark=1"                                   #
-# ansible-playbook retract.yaml -e "deployment_env=non-prod nocyberark=1"                               #
-# ansible-playbook retract.yaml -e "deployment_env=prod nocyberark=1"                                   #
+# ansible-playbook retract.yaml -e "deployment_env=aia nocyberark=1"
+# ansible-playbook retract.yaml -e "deployment_env=non-prod nocyberark=1"
+# ansible-playbook retract.yaml -e "deployment_env=prod nocyberark=1"
 #                                                                                                   #
 #####################################################################################################
 

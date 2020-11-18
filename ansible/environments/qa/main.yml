@@ -47,16 +47,15 @@
   ec2_keypair: "md-labs-key-pair"
 
   emr_release: emr-5.30.0
-  emr_cluster_name: "{{ business_unit }}-{{ application_name }}-emr-02"
+  emr_cluster_name: "{{ business_unit }}-{{ application_name }}-emr"
   emr_log_bucket: md-labs-emr-logs-bucket
 
   emr_master_count: 1
   emr_master_instance: m5.xlarge
 
-  emr_core_count: 2
+  emr_core_count: 0
   emr_core_instance: m5.xlarge
 
-  # emr_apps: [Hadoop, Hive, Flink, Spark, Presto, Pig, Tez, JupyterHub, Hue, Sqoop, Zeppelin, ZooKeeper]
   emr_apps: [Hadoop, Hive, Flink, Spark, Presto, Pig, Tez, JupyterHub, Hue, Sqoop, Zeppelin, ZooKeeper]
 
 

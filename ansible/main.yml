@@ -3,7 +3,7 @@
 #                                                                                                   #
 # Usage:                                                                                            #
 #                                                                                                   #
-# ansible-playbook main.yml -e "deployment_env=aia"                                                #
+# ansible-playbook main.yml -e "deployment_env=aia"
 # ansible-playbook main.yml -e "deployment_env=non-prod"                                            #
 # ansible-playbook main.yml -e "deployment_env=prod"                                                #
 #                                                                                                   #
@@ -59,12 +59,6 @@
 
       ######################################################
       # create artifacts bucket and upload local build
-
-      # # this should be moved to retract
-      # - name: delete artifacts bucket and all contents
-      #   amazon.aws.aws_s3:
-      #     bucket: "{{ bucket_artifacts }}"
-      #     mode: delete
 
       # - name: create artifacts s3 bucket v1
       #   amazon.aws.s3_bucket:
