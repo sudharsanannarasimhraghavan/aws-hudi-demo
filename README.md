@@ -46,6 +46,7 @@ ansible-playbook main.yml -e "deployment_env=<your deployiment env>"
 ```
 
 
+Before retracting the deployment, plese be sure the DMS replication task is stopped. Otherwise the retract will fail.
 To retract all resources, run:
 
 ```bash

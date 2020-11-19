@@ -53,7 +53,7 @@
   emr_master_count: 1
   emr_master_instance: m5.xlarge
 
-  emr_core_count: 2
+  emr_core_count: 0
   emr_core_instance: m5.xlarge
 
   # emr_apps: [Hadoop, Hive, Flink, Spark, Presto, Pig, Tez, JupyterHub, Hue, Sqoop, Zeppelin, ZooKeeper]

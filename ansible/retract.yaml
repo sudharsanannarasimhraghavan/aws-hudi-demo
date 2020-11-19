@@ -27,6 +27,18 @@
     - block:
 #######################################################################################################
 
+      # # stop dms task
+      # # {{ business_unit }}-{{ application_name }}-repl-task-01
+      # - name: stop replication
+      #   shell: "aws dms stop-replication-task --replication-task-arn '' "
+      #   register: shell_response
+      #   ignore_errors: yes
+
+      # # display the output of the shell command
+      # - debug:
+      #     msg: "{{ shell_response }}"
+
+
       - name: retract solution cloudformation
         amazon.aws.cloudformation:
           stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"

@@ -34,8 +34,12 @@ insert into dev.retail_transactions values(3,'2019-03-15',3,'SPRINGFIELD','IL','
 insert into dev.retail_transactions values(4,'2019-03-17',4,'SAN FRANCISCO','CA','XXXXXX',8,136.25);
 insert into dev.retail_transactions values(5,'2019-03-11',1,'CHICAGO','IL','XXXXXX',9,146.25);
 
--- --------------------------------------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------------------------------------
+delete from dev.retail_transactions where tran_id=15;
 insert into dev.retail_transactions values(6,'2019-03-18',1,'CHICAGO','IL','XXXXXX',10,156.25);
+
+-- --------------------------------------------------------------------------------------------------------
+
 insert into dev.retail_transactions values(7,'2019-03-14',2,'NEW YORK','NY','XXXXXX',11,166.25);
 insert into dev.retail_transactions values(8,'2019-03-11',1,'CHICAGO','IL','XXXXXX',12,176.25);
 insert into dev.retail_transactions values(9,'2019-03-10',4,'SAN FRANCISCO','CA','XXXXXX',13,186.25);

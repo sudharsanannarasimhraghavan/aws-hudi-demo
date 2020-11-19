@@ -201,8 +201,8 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.sql.hive.convertMetastoreParquet=false \
     --conf spark.yarn.maxAppAttempts=20 \
+    --conf spark.yarn.max.executor.failures=10 \
     --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
-    --conf spark.yarn.max.executor.failures=16 \
     --conf spark.yarn.executor.failuresValidityInterval=1h \
     --conf spark.task.maxFailures=8 \
     /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
@@ -214,7 +214,8 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
     --enable-hive-sync \
-    --checkpoint 0
+    --checkpoint 0 \
+    --continuous
 
 # http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/
 
@@ -238,3 +239,17 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     hdfs dfs -mkdir -p /apps/hudi/lib
     hdfs dfs -copyFromLocal /usr/lib/hudi/hudi-spark-bundle.jar /apps/hudi/lib/hudi-spark-bundle.jar
     hdfs dfs -copyFromLocal /usr/lib/spark/external/lib/spark-avro.jar /apps/hudi/lib/spark-avro.jar
+
+
+
+
+
+
+
+
+
+    - name: try creating a key pair with name of an already existing keypair
+      amazon.aws.ec2_key:
+          name: my_existing_keypair
+          key_material: 'ssh-rsa AAAAxyz...== me@example.com'
+          force: false
