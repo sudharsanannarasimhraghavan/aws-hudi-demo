@@ -12,7 +12,8 @@ This project also showcase infrastructure as code patern by using Ansible to orc
 * [amazon.aws ansible](https://galaxy.ansible.com/amazon/aws) module collection:
     - `ansible-galaxy collection install amazon.aws`
 
-
+User should already have EC2 key-pair generated and specified in environments main.yaml. Otherwise a new one will be created.
+The key-pair it's used to access EMR.
 ## Architecture
 
 ![Architecture](./docs/architecture.png)
