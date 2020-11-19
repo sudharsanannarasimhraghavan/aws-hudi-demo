@@ -27,6 +27,15 @@
     - block:
 #######################################################################################################
 
+      - name: get account id from aws cli caller identity
+        shell: "aws sts get-caller-identity --query Account --output text"
+        register: account_id_shell_response
+      
+      - set_fact:
+          account_id: '{{account_id_shell_response.stdout}}'
+          bucket_data: "md-labs-hudi-demo-data-bucket-{{ account_id }}"
+      
+
       - name: retract solution cloudformation
         amazon.aws.cloudformation:
           stack_name: "{{ business_unit }}-{{ application_name }}-main-solution-stack"
@@ -41,7 +50,7 @@
           mode: delete
         ignore_errors: yes
 
-
+      
 #######################################################################################################
       always:
 #######################################################################################################
