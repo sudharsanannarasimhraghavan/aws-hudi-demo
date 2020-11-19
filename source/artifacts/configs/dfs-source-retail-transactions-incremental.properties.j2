@@ -8,5 +8,4 @@ hoodie.parquet.small.file.limit=134217728
 hoodie.parquet.max.file.size=268435456
 hoodie.cleaner.commits.retained=3
 hoodie.datasource.hive_sync.partition_extractor_class=org.apache.hudi.hive.MultiPartKeysValueExtractor
-hoodie.deltastreamer.transformer.sql=
-select dms_received_ts,tran_id,cast(tran_date as string) as tran_date,store_id,store_city,store_state,item_code,quantity,total,Op from <SRC>
+hoodie.deltastreamer.transformer.sql=select dms_received_ts,tran_id,cast(tran_date as string) as tran_date,store_id,store_city,store_state,item_code,quantity,total,Op from <SRC>

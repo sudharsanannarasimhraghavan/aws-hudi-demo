@@ -34,8 +34,14 @@ aws s3 cp s3://{{ bucket_artifacts }}/{{ application_name }}/artifacts/schema/ta
 
 aws s3 cp /home/hadoop/dfs-source-retail-transactions-full.properties s3://"${CFTS3Bucket}"/properties/
 aws s3 cp /home/hadoop/dfs-source-retail-transactions-incremental.properties s3://"${CFTS3Bucket}"/properties/
-#sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-#sudo start amazon-ssm-agent
+
+# # prepare libraries for jupyter notebooks in pyspark
+# hdfs dfs -mkdir -p /apps/hudi/lib
+# hdfs dfs -copyFromLocal /usr/lib/hudi/hudi-spark-bundle.jar /apps/hudi/lib/hudi-spark-bundle.jar
+# hdfs dfs -copyFromLocal /usr/lib/spark/external/lib/spark-avro.jar /apps/hudi/lib/spark-avro.jar
+
+# sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+# sudo start amazon-ssm-agent
 
 echo "Bootstrap completed successfully"
 exit 0

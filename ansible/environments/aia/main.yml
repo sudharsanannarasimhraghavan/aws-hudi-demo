@@ -14,7 +14,7 @@
 
   bucket_artifacts: md-labs-hudi-demo-artifacts-bucket
   # TODO: segregate data bucket
-  bucket_data: md-labs-hudi-demo-data-bucket # created by the CFT
+  bucket_data: md-labs-hudi-demo-data # created by the CFT
 
   # #######################################################
   # security variables
