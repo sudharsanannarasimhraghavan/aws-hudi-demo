@@ -54,3 +54,6 @@ To retract all resources, run:
 ansible-playbook retract.yml -e "deployment_env=<your deployiment env>"
 
 ```
+
+## Using the Demo
+

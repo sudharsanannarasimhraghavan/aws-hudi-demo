@@ -33,6 +33,7 @@
   # rds variables
   rds_engine: mysql
   rds_master_user: master
+  # TODO: should be moved to secrets manager
   rds_master_password: QAZwsx123
   rds_instance_class: db.m4.large
   rds_instance_identifier: "{{ business_unit }}-{{ application_name }}-mysql-db" # md-labs-hudi-demo-mysql-db-01
@@ -47,6 +48,7 @@
   ec2_keypair: "md-labs-key-pair"
 
   emr_release: emr-5.30.0
+  # emr_release: emr-6.2.0  # errors on bootstrap script
   emr_cluster_name: "{{ business_unit }}-{{ application_name }}-emr-02"
   emr_log_bucket: md-labs-emr-logs-bucket
 
@@ -63,7 +65,8 @@
   # #######################################################
   # dms variables
   dms_instance_class: dms.t2.large
-  dms_engine_version: 3.3.3
+  # dms_engine_version: 3.3.3
+  dms_engine_version: 3.4.2
   dms_allocation_storage: 100
 
   # #######################################################
