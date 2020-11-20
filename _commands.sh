@@ -30,7 +30,7 @@ aws dms create-endpoint --endpoint-identifier s3-target-endpoint --engine-name s
 # delete s3 bucket
 aws s3 rb s3://aws-logs-156021229203-us-east-1 --force
 aws s3 rb s3://cf-templates-4zzhzactpkq4-us-east-1 --force
-aws s3 rb s3://md-labs-hudi-demo-data-bucket --force
+aws s3 rb s3://md-labs-hudi-demo-156021229203-data --force
 
 # copy apache hudi jars to s3
 aws s3 cp /usr/lib/hudi/hudi-spark-bundle.jar s3://aws-analytics-course/hudi/jar/
@@ -63,7 +63,7 @@ aws dms delete-endpoint --endpoint-arn $DMS_END_DEST
 aws dms delete-replication-instance --replication-instance-arn $REP_ARN
 aws rds delete-db-instance --db-instance-identifier cognizant-aia-hudi-demo-rds-02 --skip-final-snapshot
 
-aws s3 rb s3://md-labs-hudi-demo-data-bucket --force
+aws s3 rb s3://md-labs-hudi-demo-156021229203-data --force
 
 ####################################################################################################################################################################
 # create emr cluster cli
@@ -118,9 +118,8 @@ aws emr create-cluster \
 ####################################################################################################################################################################
 # connect to emr cluster
 ####################################################################################################################################################################
-
 ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pairs/md-labs-key-pair.pem \
-hadoop@ec2-52-205-250-255.compute-1.amazonaws.com -y
+hadoop@ec2-54-147-80-206.compute-1.amazonaws.com
 
 
 ####################################################################################################################################################################
@@ -130,8 +129,8 @@ sudo su hadoop
 
 # move files from initial loading by CDC to another place
 aws s3 mv \
-s3://md-labs-hudi-demo-data-bucket/dmsdata/dev/retail_transactions/ \
-s3://md-labs-hudi-demo-data-bucket/dmsdata/data-full/dev/retail_transactions/  \
+s3://md-labs-hudi-demo-156021229203-data/dmsdata/dev/retail_transactions/ \
+s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/  \
 --exclude "*" --include "LOAD*.parquet" --recursive
 
 ####################################################################################################################################################################
@@ -147,9 +146,9 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
     --table-type COPY_ON_WRITE \
     --source-ordering-field dms_received_ts \
-    --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-full.properties \
+    --props s3://md-labs-hudi-demo-156021229203-data/properties/dfs-source-retail-transactions-full.properties \
     --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
+    --target-base-path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
@@ -168,11 +167,11 @@ spark-shell \
 spark.sql("show databases").show()
 spark.sql("Select * from hudi_glue_db.retail_transactions order by tran_id").show()
 
-# s3://md-labs-hudi-demo-data-bucket/dmsdata/data-full/dev/retail_transactions/
+# s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/
 
 # another way to read data
-spark.read.parquet("s3://md-labs-hudi-demo-data-bucket/dmsdata/data-full/dev/retail_transactions/*").sort("tran_id").show
-spark.read.parquet("s3://md-labs-hudi-demo-data-bucket/dmsdata/dev/retail_transactions/*").sort("tran_id").show
+spark.read.parquet("s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/*").sort("tran_id").show
+spark.read.parquet("s3://md-labs-hudi-demo-156021229203-data/dmsdata/dev/retail_transactions/*").sort("tran_id").show
 
 
 ############################################################################################################################################
@@ -185,8 +184,8 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
     --table-type COPY_ON_WRITE \
     --source-ordering-field dms_received_ts \
-    --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
+    --props s3://md-labs-hudi-demo-156021229203-data/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
+    --target-base-path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
@@ -208,8 +207,8 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
     --table-type COPY_ON_WRITE \
     --source-ordering-field dms_received_ts \
-    --props s3://md-labs-hudi-demo-data-bucket/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
-    --target-base-path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
+    --props s3://md-labs-hudi-demo-156021229203-data/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
+    --target-base-path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions --target-table hudi_glue_db.retail_transactions \
     --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
@@ -223,7 +222,7 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
 
     /usr/lib/hudi/cli/bin/hudi-cli.sh
 
-    connect --path s3://md-labs-hudi-demo-data-bucket/hudi/retail_transactions
+    connect --path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions
 
     # reference:
     # https://hudi.apache.org/docs/0.5.2-querying_data.html
