@@ -39,16 +39,20 @@
       - name: get account id from aws cli caller identity
         shell: "aws sts get-caller-identity --query Account --output text"
         register: account_id_shell_response
-      
+
       - set_fact:
           account_id: '{{account_id_shell_response.stdout}}'
-          bucket_artifacts: "md-labs-hudi-demo-artifacts-bucket-{{ account_id }}"
+          bucket_artifacts: "{{ bucket_artifacts }}-{{ account_id }}"
+          bucket_data: "{{ bucket_data }}-{{ account_id }}"
 
       - debug:
           msg: '{{account_id_shell_response.stdout}}'
-      
+
       - debug:
           msg: "{{bucket_artifacts}}"
+
+      - debug:
+          msg: "{{bucket_data}}"
 
       #####################################################
       # deploy the vpc and our security group
@@ -94,7 +98,7 @@
       - name: sync files using aws cli
         shell: "aws s3 sync '{{ path_to_build }}/artifacts' 's3://{{ bucket_artifacts }}/{{ application_name }}/artifacts'"
         register: shell_response
-      
+
 
       # display the output of the shell command
       - debug:

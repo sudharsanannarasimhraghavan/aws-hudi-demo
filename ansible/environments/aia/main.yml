@@ -12,9 +12,9 @@
   path_to_source: "{{ playbook_dir }}/../source"
   path_to_build: "{{ playbook_dir }}/../build/{{ deployment_env }}"
 
-  bucket_artifacts: md-labs-hudi-demo-artifacts-bucket
+  bucket_artifacts: md-labs-hudi-demo-artifacts
   # TODO: segregate data bucket
-  bucket_data: md-labs-hudi-demo-data-bucket # created by the CFT
+  bucket_data: md-labs-hudi-demo-data # created by the CFT
 
   # #######################################################
   # security variables

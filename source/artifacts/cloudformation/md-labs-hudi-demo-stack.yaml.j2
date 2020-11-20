@@ -68,11 +68,7 @@ Resources:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Join
-        - ''
-        - - 'md-labs-hudi-demo-data-bucket'
-          - '-'
-          - !Ref 'AWS::AccountId'
+      BucketName: {{ bucket_data }}
 
 
   GlueDB:
