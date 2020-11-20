@@ -42,8 +42,8 @@
 
       - set_fact:
           account_id: '{{account_id_shell_response.stdout}}'
-          bucket_artifacts: "{{ bucket_artifacts }}-{{ account_id }}"
-          bucket_data: "{{ bucket_data }}-{{ account_id }}"
+          bucket_artifacts: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-artifacts"
+          bucket_data: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-data"
 
       - debug:
           msg: '{{account_id_shell_response.stdout}}'
@@ -54,7 +54,7 @@
       - debug:
           msg: "{{bucket_data}}"
 
-      #####################################################
+      # #####################################################
       # deploy the vpc and our security group
 
       # execute roles in a loop from a list
