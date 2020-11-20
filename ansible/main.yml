@@ -34,8 +34,27 @@
     - block:
 #######################################################################################################
 
-
       #####################################################
+      # calling shell command to get account id and register as variable
+      - name: get account id from aws cli caller identity
+        shell: "aws sts get-caller-identity --query Account --output text"
+        register: account_id_shell_response
+
+      - set_fact:
+          account_id: '{{account_id_shell_response.stdout}}'
+          bucket_artifacts: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-artifacts"
+          bucket_data: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-data"
+
+      - debug:
+          msg: '{{account_id_shell_response.stdout}}'
+
+      - debug:
+          msg: "{{bucket_artifacts}}"
+
+      - debug:
+          msg: "{{bucket_data}}"
+
+      # #####################################################
       # deploy the vpc and our security group
 
       # execute roles in a loop from a list
@@ -80,9 +99,13 @@
         shell: "aws s3 sync '{{ path_to_build }}/artifacts' 's3://{{ bucket_artifacts }}/{{ application_name }}/artifacts'"
         register: shell_response
 
+
       # display the output of the shell command
       - debug:
           msg: "{{ shell_response }}"
+
+      - debug:
+          msg: "{{ path_to_build }}"
 
 
       # # TODO: data bucket should be segregated in two

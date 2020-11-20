@@ -68,7 +68,7 @@ Resources:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
     Properties:
-      BucketName: '{{ bucket_data }}'
+      BucketName: {{ bucket_data }}
 
 
   GlueDB:
@@ -175,8 +175,8 @@ Resources:
     Properties:
       GroupId: !Ref DMSSecurityGroup
       IpProtocol: tcp
-      FromPort: '0'
-      ToPort: '65535'
+      FromPort: 0
+      ToPort: 65535
       SourceSecurityGroupId: !Ref DMSSecurityGroup
 
 
