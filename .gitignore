@@ -244,3 +244,4 @@ build-copy/*
 
 .vscode/settings.json
 
+ansible/roles/ws-00-vpc-sg/files/*

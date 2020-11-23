@@ -33,7 +33,8 @@
 
       - set_fact:
           account_id: '{{account_id_shell_response.stdout}}'
-          bucket_data: "md-labs-hudi-demo-data-bucket-{{ account_id }}"
+          bucket_artifacts: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-artifacts"
+          bucket_data: "{{ business_unit }}-{{ application_name }}-{{ account_id }}-data"
 
 
       - name: retract solution cloudformation
@@ -50,6 +51,11 @@
           mode: delete
         ignore_errors: yes
 
+      - name: delete artifacts bucket
+        amazon.aws.aws_s3:
+          bucket: "{{ bucket_artifacts }}"
+          mode: delete
+        ignore_errors: yes
 
 #######################################################################################################
       always:

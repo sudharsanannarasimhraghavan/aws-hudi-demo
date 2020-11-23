@@ -27,7 +27,8 @@
   private_subnets: ""
 
   # where many ports will be open to, can be your home public ip
-  sg_cidr: "98.199.0.0/16"
+  # sg_cidr: "98.199.0.0/16"
+  sg_cidr: "73.102.0.0/16"
 
   # #######################################################
   # rds variables
