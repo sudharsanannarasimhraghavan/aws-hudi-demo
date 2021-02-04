@@ -1,3 +1,8 @@
+# reference: about whole project
+# https://aws.amazon.com/blogs/big-data/apply-record-level-changes-from-relational-databases-to-amazon-s3-data-lake-using-apache-hudi-on-amazon-emr-and-aws-database-migration-service/
+# https://cwiki.apache.org/confluence/pages/viewrecentblogposts.action?key=HUDI
+
+
 git init
 git add .
 git commit -m "first commit"
@@ -118,9 +123,7 @@ aws emr create-cluster \
 ####################################################################################################################################################################
 # connect to emr cluster
 ####################################################################################################################################################################
-ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pairs/md-labs-key-pair.pem \
-hadoop@ec2-174-129-184-50.compute-1.amazonaws.com
-
+ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pairs/md-labs-key-pair.pem hadoop@ec2-35-170-245-98.compute-1.amazonaws.com
 
 ####################################################################################################################################################################
 # loading data operations
@@ -138,6 +141,7 @@ s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactio
 # this is using deltastreamer
 # reference on parameters: https://hudi.apache.org/docs/0.5.2-writing_data.html#deltastreamer
 
+# COPY_ON_WRITE
 spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
     --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
     --master yarn --deploy-mode cluster \
@@ -154,6 +158,25 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
     --enable-hive-sync
 
+# MERGE_ON_READ
+spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
+    --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
+    --master yarn --deploy-mode cluster \
+    --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+    --conf spark.sql.hive.convertMetastoreParquet=false \
+    /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
+    --table-type MERGE_ON_READ \
+    --source-ordering-field dms_received_ts \
+    --props s3://md-labs-hudi-demo-156021229203-data/properties/dfs-source-retail-transactions-full.properties \
+    --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
+    --target-base-path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions_mor --target-table hudi_glue_db.retail_transactions_mor \
+    --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
+    --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
+    --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
+    --enable-hive-sync
+
+
+
 ############################################################################################################################################
 spark-shell \
 --conf "spark.serializer=org.apache.spark.serializer.KryoSerializer" \
@@ -167,15 +190,16 @@ spark-shell \
 spark.sql("show databases").show()
 spark.sql("select * from hudi_glue_db.retail_transactions order by tran_id").show()
 
-# s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/
 
-# another way to read data
+# another way to read data, this is for dms data
 spark.read.parquet("s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/*").sort("tran_id").show
 spark.read.parquet("s3://md-labs-hudi-demo-156021229203-data/dmsdata/dev/retail_transactions/*").sort("tran_id").show
 
 
 ############################################################################################################################################
 # spark-submit command to get the incremental changes
+
+# COPY_ON_WRITE
 spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
     --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
     --master yarn --deploy-mode cluster \
@@ -190,8 +214,26 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
     --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
     --enable-hive-sync \
-    --checkpoint 0
+    --checkpoint 0  # include this only on the first incremental
 
+# MERGE_ON_READ
+spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
+    --packages org.apache.hudi:hudi-utilities-bundle_2.11:0.5.2-incubating,org.apache.spark:spark-avro_2.11:2.4.5 \
+    --master yarn --deploy-mode cluster \
+    --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+    --conf spark.sql.hive.convertMetastoreParquet=false \
+    /usr/lib/hudi/hudi-utilities-bundle_2.11-0.5.2-incubating.jar \
+    --table-type MERGE_ON_READ \
+    --source-ordering-field dms_received_ts \
+    --props s3://md-labs-hudi-demo-156021229203-data/properties/dfs-source-retail-transactions-incremental.properties --source-class org.apache.hudi.utilities.sources.ParquetDFSSource \
+    --target-base-path s3://md-labs-hudi-demo-156021229203-data/hudi/retail_transactions_mor --target-table hudi_glue_db.retail_transactions_mor \
+    --transformer-class org.apache.hudi.utilities.transform.SqlQueryBasedTransformer \
+    --payload-class org.apache.hudi.payload.AWSDmsAvroPayload \
+    --schemaprovider-class org.apache.hudi.utilities.schema.FilebasedSchemaProvider \
+    --enable-hive-sync \
+    --checkpoint 0 # include this only on the first incremental
+
+--disable-compaction
 
 # continuos
 spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer  \
@@ -235,20 +277,13 @@ spark-submit --class org.apache.hudi.utilities.deltastreamer.HoodieDeltaStreamer
     ###########################################################################################
     #  prepare for working with emr notebook
 
-    hdfs dfs -mkdir -p /apps/hudi/lib
-    hdfs dfs -copyFromLocal /usr/lib/hudi/hudi-spark-bundle.jar /apps/hudi/lib/hudi-spark-bundle.jar
-    hdfs dfs -copyFromLocal /usr/lib/spark/external/lib/spark-avro.jar /apps/hudi/lib/spark-avro.jar
+hdfs dfs -mkdir -p /apps/hudi/lib
+hdfs dfs -copyFromLocal /usr/lib/hudi/hudi-spark-bundle.jar /apps/hudi/lib/hudi-spark-bundle.jar
+hdfs dfs -copyFromLocal /usr/lib/spark/external/lib/spark-avro.jar /apps/hudi/lib/spark-avro.jar
 
 
 
-
-
-
-
-
-
-    - name: try creating a key pair with name of an already existing keypair
-      amazon.aws.ec2_key:
-          name: my_existing_keypair
-          key_material: 'ssh-rsa AAAAxyz...== me@example.com'
-          force: false
+# #############################################################################################
+# reference on hudi queries
+# https://hudi.apache.org/docs/querying_data.html
+# https://hudi.apache.org/docs/quick-start-guide.html

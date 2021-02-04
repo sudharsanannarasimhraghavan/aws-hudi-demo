@@ -13,6 +13,7 @@ item_code varchar(50),
 quantity INT,
 total FLOAT);
 
+
 -- --------------------------------------------------------------------------------------------------------
 -- initial records
 insert into dev.retail_transactions values(1,'2019-03-17',1,'CHICAGO','IL','XXXXXX',5,106.25);
@@ -23,7 +24,7 @@ insert into dev.retail_transactions values(2,'2019-03-16',2,'NEW YORK','NY','XXX
 -- apply an insert, update and delete
 insert into dev.retail_transactions values(15,'2019-03-16',7,'CHICAGO','IL','XXXXXX',17,126.25);
 update dev.retail_transactions set store_city='SPRINGFIELD' where tran_id=1;
-delete from dev.retail_transactions where tran_id=2;
+delete from dev.retail_transactions where tran_id=15;
 insert into dev.retail_transactions values(4,'2019-03-17',4,'SAN FRANCISCO','CA','XXXXXX',8,136.25);
 
 
@@ -31,8 +32,8 @@ insert into dev.retail_transactions values(4,'2019-03-17',4,'SAN FRANCISCO','CA'
 -- another set of inserts and an update
 update dev.retail_transactions set store_city='NEW YORK' where tran_id=1;
 insert into dev.retail_transactions values(3,'2019-03-15',3,'SPRINGFIELD','IL','XXXXXX',7,126.25);
-insert into dev.retail_transactions values(4,'2019-03-17',4,'SAN FRANCISCO','CA','XXXXXX',8,136.25);
-insert into dev.retail_transactions values(5,'2019-03-11',1,'CHICAGO','IL','XXXXXX',9,146.25);
+insert into dev.retail_transactions values(4,'2019-03-15',4,'SAN FRANCISCO','CA','XXXXXX',8,136.25);
+insert into dev.retail_transactions values(5,'2019-03-15',1,'CHICAGO','IL','XXXXXX',9,146.25);
 
 -- ---------------------------------------------------------------------------------------------------------
 delete from dev.retail_transactions where tran_id=15;

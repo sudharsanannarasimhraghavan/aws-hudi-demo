@@ -77,11 +77,7 @@ Resources:
       CatalogId: !Ref 'AWS::AccountId'
       DatabaseInput:
         Description: Database for the Hudi CDC Demo
-        LocationUri: !Join
-          - ''
-          - - 's3://'
-            - !Ref TempS3Bucket
-            - /
+        LocationUri: 's3://{{ bucket_data }}/'
         Name: {{ glue_db_name }}
 
 
