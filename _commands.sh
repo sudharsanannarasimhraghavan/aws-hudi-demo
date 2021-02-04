@@ -1,6 +1,12 @@
+# this file contain a collection of commands used to do the demo and during the research
+
+
 # reference: about whole project
 # https://aws.amazon.com/blogs/big-data/apply-record-level-changes-from-relational-databases-to-amazon-s3-data-lake-using-apache-hudi-on-amazon-emr-and-aws-database-migration-service/
 # https://cwiki.apache.org/confluence/pages/viewrecentblogposts.action?key=HUDI
+
+# this project on github:
+# https://github.com/cognizant-aia-cloud/aws-hudi-demo
 
 
 git init
@@ -71,7 +77,7 @@ aws rds delete-db-instance --db-instance-identifier cognizant-aia-hudi-demo-rds-
 aws s3 rb s3://md-labs-hudi-demo-156021229203-data --force
 
 ####################################################################################################################################################################
-# create emr cluster cli
+# create emr cluster cli (moved to ansible script)
 ####################################################################################################################################################################
 aws emr create-cluster \
 --auto-scaling-role EMR_AutoScaling_DefaultRole \
@@ -131,6 +137,7 @@ ssh -i /Users/marian.dumitrascu/Dropbox/Work/current/hudi/aws-hudi-demo/key-pair
 sudo su hadoop
 
 # move files from initial loading by CDC to another place
+# this must be executed after the dms job starts first time
 aws s3 mv \
 s3://md-labs-hudi-demo-156021229203-data/dmsdata/dev/retail_transactions/ \
 s3://md-labs-hudi-demo-156021229203-data/dmsdata/data-full/dev/retail_transactions/  \
